@@ -19,35 +19,33 @@
           "Liberation Mono", "Courier New", monospace;
       }
 
-      * { box-sizing: border-box; }
-      html, body { height: 100%; margin: 0; }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
 
       body {
         font-family: var(--mono);
         color: var(--text);
-        background:
-          radial-gradient(circle at top left, #1e293b 0, var(--bg) 55%, #000 100%),
-          linear-gradient(to bottom, var(--bg2), var(--bg));
+        background: #020617;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 28px;
+        overflow: hidden;
       }
 
-      /* scanlines / CRT-ish overlay to match the main site vibe */
-      body::after {
-        content: "";
+      /* Faulty terminal canvas */
+      .faulty-bg-canvas {
         position: fixed;
         inset: 0;
-        pointer-events: none;
-        background-image: linear-gradient(
-          to bottom,
-          rgba(15, 23, 42, 0.7) 1px,
-          transparent 1px
-        );
-        background-size: 100% 2px;
-        mix-blend-mode: soft-light;
-        opacity: 0.35;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
       }
 
       .screen {
@@ -58,6 +56,7 @@
         background: rgba(2, 6, 23, 0.78);
         box-shadow: 0 18px 50px rgba(15, 23, 42, 0.86);
         position: relative;
+        z-index: 1; /* keep UI above the canvas */
         overflow: hidden;
       }
 
@@ -65,13 +64,23 @@
         content: "";
         position: absolute;
         inset: 0;
-        background:
-          radial-gradient(circle at 15% 0%, rgba(56, 189, 248, 0.18), transparent 55%),
-          radial-gradient(circle at 95% 110%, rgba(249, 115, 22, 0.12), transparent 55%);
+        background: radial-gradient(
+            circle at 15% 0%,
+            rgba(56, 189, 248, 0.18),
+            transparent 55%
+          ),
+          radial-gradient(
+            circle at 95% 110%,
+            rgba(249, 115, 22, 0.12),
+            transparent 55%
+          );
         pointer-events: none;
       }
 
-      .content { position: relative; z-index: 1; }
+      .content {
+        position: relative;
+        z-index: 1;
+      }
 
       .face {
         font-size: clamp(3.5rem, 10vw, 6rem);
@@ -102,8 +111,12 @@
         border-top: 1px solid rgba(148, 163, 184, 0.25);
       }
 
-      .k { color: rgba(229, 231, 235, 0.8); }
-      .v { color: var(--text); }
+      .k {
+        color: rgba(229, 231, 235, 0.8);
+      }
+      .v {
+        color: var(--text);
+      }
 
       .badge {
         display: inline-flex;
@@ -112,11 +125,14 @@
         font-size: 0.9rem;
         padding: 6px 10px;
         border-radius: 999px;
-        background: rgba(56, 189, 248, 0.10);
+        background: rgba(56, 189, 248, 0.1);
         border: 1px solid rgba(56, 189, 248, 0.28);
         margin: 10px 0 18px;
       }
-      .badge strong { color: var(--accent); font-weight: 700; }
+      .badge strong {
+        color: var(--accent);
+        font-weight: 700;
+      }
 
       .actions {
         margin-top: 26px;
@@ -135,7 +151,8 @@
         border-radius: 12px;
         font-family: var(--mono);
         cursor: pointer;
-        transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+        transition: transform 160ms ease, background 160ms ease,
+          border-color 160ms ease;
       }
       button:hover {
         transform: translateY(-1px);
@@ -143,22 +160,34 @@
         background: rgba(56, 189, 248, 0.18);
       }
 
-      .hint { color: var(--muted2); font-size: 0.9rem; }
-      .danger { color: var(--danger); }
+      .hint {
+        color: var(--muted2);
+        font-size: 0.9rem;
+      }
+      .danger {
+        color: var(--danger);
+      }
 
       @media (max-width: 520px) {
-        .kv { grid-template-columns: 1fr; }
+        .kv {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
+    <!-- Faulty terminal background -->
+    <canvas id="faulty-bg" class="faulty-bg-canvas" aria-hidden="true"></canvas>
+
+    <!-- Kernel panic UI -->
     <main class="screen" role="main" aria-label="Kernel panic 404">
       <div class="content">
         <div class="face">:(</div>
         <h1>christOS ran into a problem and needs to reboot the session.</h1>
         <p class="lead">
           The requested memory address does not exist in this kernel space.
-          We&apos;re collecting some crash info, then we&apos;ll return you to the bootloader.
+          We&apos;re collecting some crash info, then we&apos;ll return you to
+          the bootloader.
         </p>
 
         <div class="badge" aria-label="error code">
@@ -188,24 +217,176 @@
     </main>
 
     <script>
-      // Display the missing path
-      var el = document.getElementById('path');
-      if (el) el.textContent = window.location.pathname || '/';
+      // Show the missing path
+      var el = document.getElementById("path");
+      if (el) el.textContent = window.location.pathname || "/";
 
-      // Robust “back to bootloader” for GitHub Pages project sites.
-      // Example: /Personal-Website/whatever -> /Personal-Website/
-      function repoRoot() {
-        var parts = (window.location.pathname || '/').split('/').filter(Boolean);
-        if (parts.length > 0) return '/' + parts[0] + '/';
-        return '/';
-      }
-
-      var boot = document.getElementById('boot');
+      // Back to bootloader -> your main domain
+      var boot = document.getElementById("boot");
       if (boot) {
-        boot.addEventListener('click', function () {
-          window.location.href = repoRoot();
+        boot.addEventListener("click", function () {
+          window.location.href = "https://chrispolimatidis.com";
         });
       }
+    </script>
+
+    <script>
+      // FaultyTerminalBackground (ported from React component to vanilla JS)
+      (function () {
+        const canvas = document.getElementById("faulty-bg");
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        function resize() {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+
+          canvas.width = width * dpr;
+          canvas.height = height * dpr;
+          canvas.style.width = width + "px";
+          canvas.style.height = height + "px";
+
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        resize();
+        window.addEventListener("resize", resize);
+
+        const CELL = 22;
+
+        const baseColor = { r: 79, g: 89, b: 104 };
+        const accentColor = { r: 56, g: 189, b: 248 };
+
+        const lerp = (a, b, t) => a + (b - a) * t;
+
+        const hash = (x, y) => {
+          const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+          return s - Math.floor(s);
+        };
+
+        // controlled periodic flash
+        const FLASH_INTERVAL = 45000; // ms between flashes
+        const FLASH_DURATION = 600; // ms length of flash
+        const FLASH_ALPHA = 0.32; // intensity of flash
+        let lastFlashAt = -FLASH_INTERVAL; // so we get one near startup
+
+        let frameId;
+
+        const render = (time) => {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          const t = time * 0.001;
+
+          // background
+          ctx.fillStyle = "#020617";
+          ctx.fillRect(0, 0, width, height);
+
+          const cols = Math.ceil(width / CELL);
+          const rows = Math.ceil(height / CELL);
+
+          for (let gy = 0; gy < rows; gy++) {
+            for (let gx = 0; gx < cols; gx++) {
+              const nx = gx / cols;
+              const ny = gy / rows;
+
+              let pattern =
+                Math.sin(nx * 9.3 + t * 0.8) * 0.5 +
+                Math.sin(ny * 15.7 - t * 0.4) * 0.3 +
+                Math.sin((nx + ny) * 7.1 + t * 0.6) * 0.2;
+
+              pattern = pattern * 0.5 + 0.5;
+
+              const grain = hash(gx * 1.3, gy * 0.9);
+              let value = pattern * 0.7 + grain * 0.3;
+
+              if (value < 0.62) continue;
+
+              const alpha = 0.06 + value * 0.4;
+
+              const mix = Math.pow(nx, 1.4);
+              const r = Math.round(lerp(baseColor.r, accentColor.r, mix));
+              const g = Math.round(lerp(baseColor.g, accentColor.g, mix));
+              const b = Math.round(lerp(baseColor.b, accentColor.b, mix));
+
+              ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+              const px = gx * CELL;
+              const py = gy * CELL;
+
+              const drift =
+                Math.sin(t * 0.35 + gx * 0.25) * 2 +
+                Math.sin(t * 0.18 + gy * 0.4) * 1.2;
+
+              const shape = (gx + gy) % 4;
+              const inset = 3;
+
+              if (shape === 0) {
+                ctx.fillRect(
+                  px + inset,
+                  py + inset + drift,
+                  CELL - inset * 2,
+                  3
+                );
+              } else if (shape === 1) {
+                ctx.fillRect(
+                  px + inset + 2,
+                  py + inset + drift,
+                  3,
+                  CELL - inset * 2
+                );
+              } else if (shape === 2) {
+                ctx.fillRect(
+                  px + inset,
+                  py + inset + drift,
+                  CELL - inset * 2,
+                  CELL / 2.4
+                );
+              } else {
+                const size = CELL / 2.8;
+                ctx.fillRect(px + inset, py + inset + drift, size, size);
+                ctx.fillRect(
+                  px + inset + size + 2,
+                  py + inset + drift,
+                  size,
+                  size
+                );
+              }
+            }
+          }
+
+          // scanlines
+          ctx.fillStyle = "rgba(15, 23, 42, 0.45)";
+          for (let y = 0; y < height; y += 3) {
+            ctx.fillRect(0, y, width, 1);
+          }
+
+          // periodic global flash every ~45s
+          const elapsedSinceLastFlash = time - lastFlashAt;
+
+          if (elapsedSinceLastFlash >= FLASH_INTERVAL) {
+            lastFlashAt = time;
+          }
+
+          const flashAge = time - lastFlashAt;
+          if (flashAge >= 0 && flashAge <= FLASH_DURATION) {
+            const phase = flashAge / FLASH_DURATION; // 0 -> 1
+            const alpha = FLASH_ALPHA * (1 - phase); // fade out
+            ctx.fillStyle = `rgba(148, 163, 184, ${alpha})`;
+            ctx.fillRect(0, 0, width, height);
+          }
+
+          frameId = requestAnimationFrame(render);
+        };
+
+        frameId = requestAnimationFrame(render);
+
+        window.addEventListener("beforeunload", function () {
+          window.removeEventListener("resize", resize);
+          cancelAnimationFrame(frameId);
+        });
+      })();
     </script>
   </body>
 </html>
