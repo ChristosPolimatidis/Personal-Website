@@ -73,6 +73,9 @@ export default function UserMode({ onSwitchToRoot, onBackToBoot }) {
             <li>
               <a href="mailto:polimatidischris@gmail.com">Email</a>
             </li>
+            <li>
+              <a href="mailto:cpolimatidis@optisol.io">Business Email</a>
+            </li>
           </ul>
         </div>
 
