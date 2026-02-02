@@ -39,7 +39,6 @@
         overflow: hidden;
       }
 
-      /* Faulty terminal canvas */
       .faulty-bg-canvas {
         position: fixed;
         inset: 0;
@@ -56,7 +55,7 @@
         background: rgba(2, 6, 23, 0.78);
         box-shadow: 0 18px 50px rgba(15, 23, 42, 0.86);
         position: relative;
-        z-index: 1; /* keep UI above the canvas */
+        z-index: 1;
         overflow: hidden;
       }
 
@@ -176,10 +175,8 @@
     </style>
   </head>
   <body>
-    <!-- Faulty terminal background -->
     <canvas id="faulty-bg" class="faulty-bg-canvas" aria-hidden="true"></canvas>
 
-    <!-- Kernel panic UI -->
     <main class="screen" role="main" aria-label="Kernel panic 404">
       <div class="content">
         <div class="face">:(</div>
@@ -217,11 +214,9 @@
     </main>
 
     <script>
-      // Show the missing path
       var el = document.getElementById("path");
       if (el) el.textContent = window.location.pathname || "/";
 
-      // Back to bootloader -> your main domain
       var boot = document.getElementById("boot");
       if (boot) {
         boot.addEventListener("click", function () {
@@ -231,7 +226,6 @@
     </script>
 
     <script>
-      // FaultyTerminalBackground (ported from React component to vanilla JS)
       (function () {
         const canvas = document.getElementById("faulty-bg");
         if (!canvas) return;
@@ -266,11 +260,10 @@
           return s - Math.floor(s);
         };
 
-        // controlled periodic flash
-        const FLASH_INTERVAL = 45000; // ms between flashes
-        const FLASH_DURATION = 600; // ms length of flash
-        const FLASH_ALPHA = 0.32; // intensity of flash
-        let lastFlashAt = -FLASH_INTERVAL; // so we get one near startup
+        const FLASH_INTERVAL = 45000;
+        const FLASH_DURATION = 600;
+        const FLASH_ALPHA = 0.32;
+        let lastFlashAt = -FLASH_INTERVAL;
 
         let frameId;
 
@@ -279,7 +272,6 @@
           const height = window.innerHeight;
           const t = time * 0.001;
 
-          // background
           ctx.fillStyle = "#020617";
           ctx.fillRect(0, 0, width, height);
 
@@ -356,13 +348,11 @@
             }
           }
 
-          // scanlines
           ctx.fillStyle = "rgba(15, 23, 42, 0.45)";
           for (let y = 0; y < height; y += 3) {
             ctx.fillRect(0, y, width, 1);
           }
 
-          // periodic global flash every ~45s
           const elapsedSinceLastFlash = time - lastFlashAt;
 
           if (elapsedSinceLastFlash >= FLASH_INTERVAL) {
@@ -371,8 +361,8 @@
 
           const flashAge = time - lastFlashAt;
           if (flashAge >= 0 && flashAge <= FLASH_DURATION) {
-            const phase = flashAge / FLASH_DURATION; // 0 -> 1
-            const alpha = FLASH_ALPHA * (1 - phase); // fade out
+            const phase = flashAge / FLASH_DURATION;
+            const alpha = FLASH_ALPHA * (1 - phase);
             ctx.fillStyle = `rgba(148, 163, 184, ${alpha})`;
             ctx.fillRect(0, 0, width, height);
           }
