@@ -31,6 +31,8 @@
     "SF Pro Text", "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     "Fira Code", "Fira Mono", monospace;
+
+  --scrollbar-compensation: 0px;
 }
 
 *,
@@ -826,4 +828,197 @@ button {
   object-fit: cover;
   border-radius: inherit;
   display: block;
+}
+
+/* =========================================
+   Certificates (sidebar) — stacked + larger
+   ========================================= */
+
+.cert-section {
+  margin-top: 1rem;
+}
+
+.cert-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cert-card {
+  width: 100%;
+  height: 148px;
+  border-radius: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(2, 6, 23, 0.55);
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  text-align: left;
+}
+
+.cert-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.65);
+  background: rgba(2, 6, 23, 0.7);
+}
+
+.cert-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: rgba(2, 6, 23, 0.35);
+  padding: 10px 10px 34px;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.cert-card::after {
+  content: "chrispolimatidis.com";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.18);
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.cert-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.45rem 0.6rem 0.55rem;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.96), rgba(2, 6, 23, 0));
+  pointer-events: none;
+}
+
+.cert-caption-title {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.95);
+  line-height: 1.2;
+}
+
+.cert-caption-meta {
+  margin-top: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.cert-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(10px);
+  overflow: auto;
+  padding: 1.25rem;
+}
+
+.cert-modal {
+  width: min(980px, 96vw);
+  margin: 4vh auto;
+  border-radius: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.10), transparent 60%),
+    rgba(2, 6, 23, 0.92);
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.cert-modal-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem 0.65rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.cert-modal-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.cert-modal-meta {
+  margin-top: 0.15rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.cert-modal-close {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.10);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  font-family: var(--font-mono);
+}
+
+.cert-modal-close:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.cert-modal-body {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.cert-modal-figure {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.cert-modal-figure img {
+  width: 100%;
+  height: auto;
+  max-height: 72vh;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.cert-modal-note {
+  margin-top: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.cert-modal-open {
+  overflow: hidden;
+  padding-right: var(--scrollbar-compensation);
+}
+
+.cert-modal-open .shell {
+  pointer-events: none;
+  filter: blur(2px) brightness(0.85);
+}
+
+.cert-modal-open .cert-modal-backdrop {
+  pointer-events: auto;
+  z-index: 2147483647;
 }

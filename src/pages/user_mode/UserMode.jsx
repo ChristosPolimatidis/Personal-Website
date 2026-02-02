@@ -1,5 +1,14 @@
 // src/pages/user_mode/UserMode.jsx
 import profilePic from "../../assets/me.jpg";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+
+// certificates (jpgs in src/assets)
+import certIJCKG from "../../assets/14th_IJCKG.jpg";
+import certECPE from "../../assets/ECPE_cert.jpg";
+import certFutureEd from "../../assets/FutureEd_Hackathon.jpg";
+import certOramaVR from "../../assets/OramaVR_Hackathon.jpg";
+import certYoloV12 from "../../assets/yolov12_cert.jpg";
 
 function Brand() {
   return (
@@ -10,6 +19,137 @@ function Brand() {
         <div className="brand-tag">personal kernel space</div>
       </div>
     </div>
+  );
+}
+
+function CertificatesStack() {
+  const certs = [
+    {
+      id: "ijckg",
+      title: "IJC KG 2025 — Certificate of Attendance",
+      meta: "FORTH · 2025",
+      src: certIJCKG,
+    },
+    {
+      id: "futureed",
+      title: "FuturEd Hackathon — Certificate of Participation",
+      meta: "EPIGNOSIS / UOC CSD · 2025",
+      src: certFutureEd,
+    },
+    {
+      id: "orama",
+      title: "CS150 Programming Course Hackathon — Participation",
+      meta: "ORamaVR · Spring 2023",
+      src: certOramaVR,
+    },
+    {
+      id: "yolo",
+      title: "YOLOv12: Custom Object Detection, Tracking & WebApps",
+      meta: "Udemy · 2025",
+      src: certYoloV12,
+    },
+    {
+      id: "ecpe",
+      title: "ECPE — Certificate of Proficiency in English (C2)",
+      meta: "Cambridge / Univ. of Michigan · 2020",
+      src: certECPE,
+    },
+  ];
+
+  const [active, setActive] = useState(null);
+
+  const portalTarget = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    return document.body;
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+
+    document.body.classList.add("cert-modal-open");
+
+    return () => {
+      document.body.classList.remove("cert-modal-open");
+    };
+  }, [active]);
+
+  return (
+    <>
+      <div
+        className="cert-stack"
+        onContextMenu={(e) => e.preventDefault()}
+        aria-label="Certificates"
+      >
+        {certs.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            className="cert-card"
+            onClick={() => setActive(c)}
+            title={c.title}
+          >
+            <img
+              src={c.src}
+              alt={c.title}
+              loading="lazy"
+              draggable="false"
+              onDragStart={(e) => e.preventDefault()}
+            />
+            <div className="cert-caption">
+              <div className="cert-caption-title">{c.title}</div>
+              <div className="cert-caption-meta">{c.meta}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {active && portalTarget
+        ? createPortal(
+            <div
+              className="cert-modal-backdrop"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Certificate preview"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) setActive(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              <div className="cert-modal">
+                <div className="cert-modal-header">
+                  <div>
+                    <div className="cert-modal-title">{active.title}</div>
+                    <div className="cert-modal-meta">{active.meta}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="cert-modal-close"
+                    onClick={() => setActive(null)}
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="cert-modal-body">
+                  <figure className="cert-modal-figure">
+                    <img
+                      src={active.src}
+                      alt={active.title}
+                      draggable="false"
+                      onDragStart={(e) => e.preventDefault()}
+                    />
+                  </figure>
+                  <div className="cert-modal-note">
+                    Watermarked preview. If you need a verifiable copy, contact me.
+                  </div>
+                </div>
+              </div>
+            </div>,
+            portalTarget
+          )
+        : null}
+    </>
   );
 }
 
@@ -87,6 +227,11 @@ export default function UserMode({ onSwitchToRoot, onBackToBoot }) {
           <button className="mode-toggle ghost" onClick={onBackToBoot}>
             back to bootloader
           </button>
+
+          <div className="cert-section">
+            <div className="sidebar-label">certificates</div>
+            <CertificatesStack />
+          </div>
         </div>
       </aside>
 
